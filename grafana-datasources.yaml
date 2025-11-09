@@ -7,11 +7,19 @@ datasources:
     orgId: 1
     url: http://tempo:3100
     isDefault: true
+
   - name: Loki
     type: loki
     access: proxy
+    orgId: 1
     url: http://loki:3100
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+    secureJsonData:
+      httpHeaderValue1: "PriceCaptain"
+
   - name: Prometheus
     type: prometheus
     access: proxy
+    orgId: 1
     url: http://prometheus:9090
