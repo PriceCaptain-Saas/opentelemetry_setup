@@ -1,0 +1,32 @@
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 4317
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo
+    wal:
+      path: /tmp/tempo/wal
+
+compactor:
+  compaction:
+    compaction_window: 1h
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /tmp/tempo/metrics
+  processor:
+    span_metrics:
+      dimensions: [service.name, span.kind]

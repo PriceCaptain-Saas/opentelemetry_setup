@@ -1,0 +1,66 @@
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+    include_metadata = true
+  }
+
+  output {
+    traces = [otelcol.processor.batch.default.input]
+    metrics = [otelcol.processor.batch.metrics.input]
+    logs    = [otelcol.processor.batch.logs.input]
+  }
+}
+
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+livedebugging {
+  enabled = true
+}
+
+tracing {
+  write_to = [otelcol.exporter.otlp.tempo.input]
+}  
+
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+otelcol.processor.batch "metrics" {
+  output {
+    metrics = [otelcol.exporter.prometheus.input]
+  }
+}
+
+otelcol.exporter.prometheus "prom" {
+  endpoint = "0.0.0.0:9464"
+}
+
+otelcol.processor.batch "logs" {
+  output {
+    logs = [otelcol.exporter.loki.input]
+  }
+}
+
+otelcol.exporter.loki "loki" {
+  endpoint = "http://loki:3100/loki/api/v1/push"
+  tls {
+    insecure = true
+  }
+}
