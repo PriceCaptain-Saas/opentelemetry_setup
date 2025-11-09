@@ -1,12 +1,13 @@
-otelcol.receiver.otlp "default" {
-  grpc {
-    endpoint = "0.0.0.0:4317"
-  }
-  http {
-    endpoint = "0.0.0.0:4318"
-    include_metadata = true
-  }
+logging {
+  level  = "info"
+  format = "logfmt"
+}
 
+livedebugging { enabled = true }
+
+otelcol.receiver.otlp "default" {
+  grpc { endpoint = "0.0.0.0:4317" }
+  http { endpoint = "0.0.0.0:4318" }
   output {
     traces  = [otelcol.processor.batch.traces.input]
     metrics = [otelcol.processor.batch.metrics.input]
@@ -14,49 +15,50 @@ otelcol.receiver.otlp "default" {
   }
 }
 
-logging {
-  level  = "info"
-  format = "logfmt"
-}
-
-livedebugging {
-  enabled = true
-}
-
 otelcol.processor.batch "traces" {
   output {
-    traces = [otelcol.exporter.otlp.tempo.exporter]
+    traces = [otelcol.exporter.otlp.tempo.input]
   }
 }
 
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = "tempo:4317"
+    endpoint      = "http://tempo:4318"
     tls {
-      insecure = true
+      insecure  = true
     }
   }
 }
 
 otelcol.processor.batch "metrics" {
   output {
-    metrics = [otelcol.exporter.prometheus.prom.exporter]
+    metrics = [otelcol.exporter.prometheus.prom.input]
   }
 }
 
 otelcol.exporter.prometheus "prom" {
-  endpoint = "0.0.0.0:9464"
+  forward_to = [prometheus.remote_write.local.receiver]
 }
+
+prometheus.remote_write "local" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
 
 otelcol.processor.batch "logs" {
   output {
-    logs = [otelcol.exporter.loki.loki.exporter]
+    logs = [otelcol.exporter.loki.loki.input]
   }
 }
 
 otelcol.exporter.loki "loki" {
-  endpoint = "http://loki:3100/loki/api/v1/push"
-  tls {
-    insecure = true
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100"
   }
 }
