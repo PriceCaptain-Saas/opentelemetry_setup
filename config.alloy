@@ -8,7 +8,7 @@ otelcol.receiver.otlp "default" {
   }
 
   output {
-    traces = [otelcol.processor.batch.default.input]
+    traces  = [otelcol.processor.batch.traces.input]
     metrics = [otelcol.processor.batch.metrics.input]
     logs    = [otelcol.processor.batch.logs.input]
   }
@@ -23,13 +23,9 @@ livedebugging {
   enabled = true
 }
 
-tracing {
-  write_to = [otelcol.exporter.otlp.tempo.input]
-}  
-
 otelcol.processor.batch "traces" {
   output {
-    traces = [otelcol.exporter.otlp.tempo.input]
+    traces = [otelcol.exporter.otlp.tempo.exporter]
   }
 }
 
@@ -44,7 +40,7 @@ otelcol.exporter.otlp "tempo" {
 
 otelcol.processor.batch "metrics" {
   output {
-    metrics = [otelcol.exporter.prometheus.input]
+    metrics = [otelcol.exporter.prometheus.prom.exporter]
   }
 }
 
@@ -54,7 +50,7 @@ otelcol.exporter.prometheus "prom" {
 
 otelcol.processor.batch "logs" {
   output {
-    logs = [otelcol.exporter.loki.input]
+    logs = [otelcol.exporter.loki.loki.exporter]
   }
 }
 
