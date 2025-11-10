@@ -1,13 +1,15 @@
 server:
   http_listen_port: 3100
-  grpc_listen_port: 4317
+  grpc_listen_port: 9095
 
 distributor:
   receivers:
     otlp:
       protocols:
         grpc:
+          endpoint: 0.0.0.0:4317
         http:
+          endpoint: 0.0.0.0:4318
 
 storage:
   trace:
@@ -25,8 +27,24 @@ metrics_generator:
   registry:
     external_labels:
       source: tempo
+      cluster: docker-compose
   storage:
     path: /tmp/tempo/metrics
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /tmp/tempo/generator/traces
   processor:
+    service_graphs:
+      dimensions:
+        - service.name
+        - service.namespace
+      histogram_buckets: [0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8]
     span_metrics:
-      dimensions: [service.name, span.kind]
+      dimensions:
+        - service.name
+        - span.kind
+        - span.name
+        - status.code
+      histogram_buckets: [0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256, 0.512, 1.024, 2.048, 4.096]

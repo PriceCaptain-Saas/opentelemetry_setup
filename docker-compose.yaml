@@ -9,7 +9,6 @@ services:
       - "4317:4317" # OTLP gRPC
       - "4318:4318" # OTLP HTTP
       - "12345:12345" # Alloy UI
-      - "9464:9464" # Prometheus metrics
     depends_on:
       - tempo
       - loki
@@ -24,9 +23,9 @@ services:
       - ./tempo-config.yaml:/etc/tempo.yaml
       - tempo-data:/tmp/tempo
     ports:
-      - "3001:3100"
-      - "9411:9411"
-      - "14268:14268"
+      - "3001:3100"     # HTTP
+      - "9095:9095"     # gRPC
+    restart: unless-stopped
   
   loki:
     image: grafana/loki:latest
