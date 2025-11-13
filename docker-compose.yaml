@@ -58,7 +58,29 @@ services:
     depends_on:
       - tempo
       - alloy
+  
+  mongo:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    volumes:
+      - ./mongo-data:/data/db
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # RabbitMQ main port
+      - "15672:15672" # RabbitMQ management UI
+    restart: unless-stopped
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq
+
 
 volumes:
   tempo-data:
   loki-data:
+  mongo-data:
+  rabbitmq-data:
